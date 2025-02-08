@@ -1,0 +1,4 @@
+#Para abrir el crontab
+crontab -e
+#codigo que se pega en crantab para ejecutar el .sh cada 15 minutos
+*/15 * * * * /mnt/d/ubuntu/python/Clima-Toronto-App/get-weather.sh >> /mnt/d/ubuntu/python/Clima-Toronto-App/output.log 2>&1
