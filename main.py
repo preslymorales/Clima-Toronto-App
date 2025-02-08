@@ -35,12 +35,16 @@ nuevo_registro = [fecha_hora, ciudad, f"{temperatura:.1f}", f"{humedad}", f"{pre
 def formatear_fila(fila, ancho):
     return "| " + " | ".join([f"{str(dato):<{ancho[i]}}" for i, dato in enumerate(fila)]) + " |"
 
+# Verificar si ya hay 50 datos en el archivo
+if contar_lineas(archivo_csv) < 52:
 # Escribir los datos
-with open(archivo_csv, mode="a", newline="", encoding="utf-8") as file:
-    # Si el archivo está vacío, escribir el encabezado formateado
-    if file.tell() == 0:
-        file.write(formatear_fila(encabezado, columnas_ancho) + "\n")
-        file.write("|" + "|".join(["-" * (ancho + 2) for ancho in columnas_ancho]) + "|\n")  # Línea separadora
-    file.write(formatear_fila(nuevo_registro, columnas_ancho) + "\n")
-
-print("Datos climáticos guardados correctamente.")
+    with open(archivo_csv, mode="a", newline="", encoding="utf-8") as file:
+        # Si el archivo está vacío, escribir el encabezado formateado
+        if file.tell() == 0:
+            file.write(formatear_fila(encabezado, columnas_ancho) + "\n")
+            file.write("|" + "|".join(["-" * (ancho + 2) for ancho in columnas_ancho]) + "|\n")
+# Línea separadora
+        file.write(formatear_fila(nuevo_registro, columnas_ancho) + "\n")
+    print("Datos climáticos guardados correctamente.")
+else:
+    print("No se puede agregar mas datos ya hay 50 datos.")
