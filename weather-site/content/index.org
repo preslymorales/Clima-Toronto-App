@@ -4,9 +4,9 @@
 #+options: inline:t num:t p:nil pri:nil prop:nil stat:t tags:t
 #+options: tasks:t tex:t timestamp:t title:t toc:t todo:t |:t
 #+title: Proyecto ICCD332 Arquitectura de Computadores
-#+date: 2025-02-08
-#+author: Presly D. Morales , Felipe A. Quirola
-#+email: presly.morales@epn.edu.ec , felipe.quirola@epn.edu.ec
+#+date: 2024-08-07
+#+author: Profesor: Lenin G. Falconí M.Sc.
+#+email: lenin.falconi@epn.edu.ec
 #+language: es
 #+select_tags: export
 #+exclude_tags: noexport
@@ -32,7 +32,7 @@ pwd
 #+end_src
 
 #+RESULTS:
-: /home/iccd332/CityWeather/weather-site/content
+: /home/QuitoWeather
 
 El proyecto ha de tener los siguientes archivos y
 subdirectorios. Adaptar los nombres de los archivos según las ciudades
@@ -47,8 +47,8 @@ tree
 #+RESULTS:
 #+begin_example
 .
-├── clima-toronto-hoy.csv
-├── crontab.txt
+├── CityTemperatureAnalysis.ipynb
+├── clima-quito-hoy.csv
 ├── get-weather.sh
 ├── main.py
 ├── output.log
@@ -56,13 +56,19 @@ tree
     ├── build-site.el
     ├── build.sh
     ├── content
-    │   ├── #index.org#
     │   ├── images
-    │   └── index.org
+    │   │   ├── plot.png
+    │   │   └── temperature.png
+    │   ├── index.org
+    │   └── index.org_archive
     └── public
-        └── images
+        ├── images
+        │   ├── plot.png
+        │   └── temperature.png
+        ├── index.html
+        
 
-6 directories, 9 files
+5 directories, 18 files
 #+end_example
 
 Puede usar Emacs para la creación de la estructura de su proyecto
