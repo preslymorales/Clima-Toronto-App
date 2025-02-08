@@ -1,16 +1,22 @@
 import requests
 import csv
+import os
 from datetime import datetime
 
-# Configuración de la API
+# Conexión a la API
 API_KEY = "1cd0b2dac179557e6acd923869e1f565"
 LATITUD = 43.7001
 LONGITUD = -79.4163
 URL = f"https://api.openweathermap.org/data/2.5/weather?lat={LATITUD}&lon={LONGITUD}&appid={API_KEY}&units=metric"
 
 # Obtener datos climáticos
-response = requests.get(URL)
-data = response.json()
+try:
+    response = requests.get(URL)
+    response.raise_for_status()  #si la solicitud no es exitosa
+    data = response.json()
+except requests.exceptions.RequestException as e:
+    print(f"Error al conectarse a la API: {e}")
+    exit()
 
 # Extraer datos del clima
 if response.status_code == 200:
@@ -35,6 +41,13 @@ nuevo_registro = [fecha_hora, ciudad, f"{temperatura:.1f}", f"{humedad}", f"{pre
 def formatear_fila(fila, ancho):
     return "| " + " | ".join([f"{str(dato):<{ancho[i]}}" for i, dato in enumerate(fila)]) + " |"
 
+# Función para contar el número de líneas en el archivo
+def contar_lineas(archivo):
+    if os.path.exists(archivo):
+        with open(archivo, mode="r", encoding="utf-8") as file:
+            return sum(1 for line in file)
+    return 0
+
 # Verificar si ya hay 50 datos en el archivo
 if contar_lineas(archivo_csv) < 52:
 # Escribir los datos
@@ -47,4 +60,4 @@ if contar_lineas(archivo_csv) < 52:
         file.write(formatear_fila(nuevo_registro, columnas_ancho) + "\n")
     print("Datos climáticos guardados correctamente.")
 else:
-    print("No se puede agregar mas datos ya hay 50 datos.")
+    print("No se puede agregar mas datos ya hay 50 registros.")

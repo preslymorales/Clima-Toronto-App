@@ -1,0 +1,22 @@
+/bin/sh: 1: /home/iccd332/CityWeather/get-weather.sh: Permission denied
+Script ejecutado el: Sat Feb  8 15:30:01 -05 2025
+/home/iccd332/miniforge3/envs/iccd332/bin/python3: can't open file '/home/iccd332/CityWeather/clima-toronto-hoy.py': [Errno 2] No such file or directory
+Script ejecutado el: Sat Feb  8 15:45:01 -05 2025
+Traceback (most recent call last):
+  File "/home/iccd332/CityWeather/main.py", line 39, in <module>
+    if contar_lineas(archivo_csv) < 52:
+       ^^^^^^^^^^^^^
+NameError: name 'contar_lineas' is not defined
+Script ejecutado el: Sat Feb  8 16:00:01 -05 2025
+Traceback (most recent call last):
+  File "/home/iccd332/CityWeather/main.py", line 46, in <module>
+    if contar_lineas(archivo_csv) < 52:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/iccd332/CityWeather/main.py", line 40, in contar_lineas
+    if os.path.exists(archivo):
+       ^^
+NameError: name 'os' is not defined. Did you forget to import 'os'?
+Script ejecutado el: Sat Feb  8 16:15:01 -05 2025
+Datos climáticos guardados correctamente.
+Script ejecutado el: Sat Feb  8 16:30:01 -05 2025
+Datos climáticos guardados correctamente.
