@@ -26,7 +26,7 @@ else:
     exit()
 
 # Guardar datos en un archivo CSV
-archivo_csv = "/home/iccd332/Clima-Toronto-App/clima-toronto-hoy.csv"
+archivo_csv = "/home/iccd332/CityWeather/clima-toronto-hoy.csv"
 encabezado = ["Fecha y Hora", "Ciudad", "Temperatura (°C)", "Humedad (%)", "Presión (hPa)", "Viento (m/s)", "Descripción"]
 columnas_ancho = [20, 10, 20, 15, 15, 15, 25]  # Anchura de cada columna
 nuevo_registro = [fecha_hora, ciudad, f"{temperatura:.1f}", f"{humedad}", f"{presion}", f"{viento_velocidad:.1f}", descripcion]
