@@ -246,8 +246,8 @@ condiciones de su máquina):
 
 #+begin_src shell :results output :exports both
 #!/bin/bash
-echo "Script ejecutado el: $(date)" >> /home/iccd332/CityWeather/output.log
-/home/iccd332/miniforge3/envs/iccd332/bin/python3 /home/iccd332/CityWeather/main.py >> /home/iccd332/CityWeather/output.log 2>&1
+echo "Script ejecutado el: $(date)" >> /home/iccd332/TorontoWeather/output.log
+/home/iccd332/miniforge3/envs/iccd332/bin/python3 /home/iccd332/TorontoWeather/main.py >> /home/iccd332/TorontoWeather/output.log 2>&1
 #+end_src
 
 Finalmente convierta en ejecutable como se explicó en clases y laboratorio
@@ -260,7 +260,7 @@ chmod +x get-weather.sh
 Se indica la configuración realizada en crontab para la adquisición de datos
 
 #+begin_src shell
-,*/15 * * * * /home/iccd332/CityWeather/get-weather.sh >> /home/iccd332/CityWeather/output.log 2>&1
+,*/15 * * * * /home/iccd332/TorontoWeather/get-weather.sh >> /home/iccd332/TorontoWeather/output.log 2>&1
 #+end_src
 
 - Recuerde remplazar <City> por el nombre de la ciudad que analice
@@ -285,7 +285,7 @@ Presentar una muestra de 10 valores aleatorios de los datos obtenidos.
 import os
 import pandas as pd
 # lectura del archivo csv obtenido
-df = pd.read_csv('/home/iccd332/CityWeather/clima-toronto-hoy.csv')
+df = pd.read_csv('/home/iccd332/TorontoWeather/clima-toronto-hoy.csv')
 # se imprime la estructura del dataframe en forma de filas x columnas
 print(df.shape)
 #+end_src
@@ -320,52 +320,49 @@ El siguiente cógido permite hacer la gráfica de la temperatura vs
 tiempo para Org 9.7+. Para saber que versión dispone puede ejecutar
 ~M-x org-version~
 
-#+begin_src python :session clima :results file :exports both :file ./images/temperature.png
+#+begin_src python :session :results output exports both
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import os
 
-# Cargar datos desde el archivo CSV
-archivo_csv = "/home/iccd332/CityWeather/clima-toronto-hoy.csv"
-df = pd.read_csv(archivo_csv, sep="|", skiprows=2, engine="python")  # Omitir encabezados decorativos
+def leer_datos(file): #limpia el formato de tabla
+    df = pd.read_csv(file, sep='|', skipinitialspace=True, skip_blank_lines=True, encoding='utf-8')
+    df.columns = [col.strip() for col in df.columns]
+    df = df.dropna(axis=1, how='all')
+    df = df[~df['Descripción'].str.contains('---', na=False)]
+    for col in df.columns:
+        if df[col].dtype == 'object':
+            df[col] = df[col].str.strip()
+    df['Fecha y Hora'] = pd.to_datetime(df['Fecha y Hora'].str.strip(), format='%Y-%m-%d %H:%M:%S')
+    return df
 
-# Eliminar espacios en nombres de columnas
-df.columns = df.columns.str.strip()
+def graficar(df, y_col, y_label, output_file): #crea la grafica
+    fig, ax = plt.subplots(figsize=(12, 6))
+    ax.plot(df['Fecha y Hora'], df[y_col], marker='o', linestyle='-', linewidth=2, markersize=6)
+    ax.grid(True, linestyle='--', alpha=0.7)
+    city_name = df['Ciudad'].iloc[0] if not df['Ciudad'].empty else "Unknown"
+    ax.set_title(f'{y_label} vs Tiempo en {city_name}', fontsize=14, pad=20)
+    ax.set_xlabel('Fecha y Hora', fontsize=12)
+    ax.set_ylabel(y_label, fontsize=12)
+    ax.xaxis.set_major_locator(mdates.HourLocator(interval=1))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d %H:%M'))
+    plt.xticks(rotation=45)
+    fig.tight_layout()
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    plt.savefig(output_file, dpi=300, bbox_inches='tight')
+    plt.close()
 
-# Convertir la columna de fecha a formato datetime
-df["Fecha y Hora"] = pd.to_datetime(df["Fecha y Hora"])
+if __name__ == "__main__":
+    archivo_csv = "/home/iccd332/TorontoWeather/clima-toronto-hoy.csv"
+    save = "/home/iccd332/TorontoWeather/weather-site/content/images/"
+    df = leer_datos(archivo_csv)
 
-# Convertir temperatura a tipo numérico
-df["Temperatura (°C)"] = pd.to_numeric(df["Temperatura (°C)"], errors="coerce")
+    graficar(df, 'Temperatura (°C)', 'Temperatura (°C)', f'{save}temperature.png')
 
-# Definir el tamaño de la figura
-fig = plt.figure(figsize=(8,6))
-
-# Dibujar la gráfica de temperatura vs. tiempo
-plt.plot(df["Fecha y Hora"], df["Temperatura (°C)"], marker='o', linestyle='-')
-
-# Ajuste para la presentación de fechas en la imagen
-plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=2))
-plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
-
-# Personalización de la gráfica
-plt.grid()
-plt.title(f"Temperatura vs Tiempo en {df['Ciudad'].iloc[0]}")  # Obtener el nombre de la ciudad
-plt.xlabel("Fecha y Hora")
-plt.ylabel("Temperatura (°C)")
-plt.xticks(rotation=40)  # Rotación de etiquetas del eje X
-
-# Ajustar diseño para evitar superposición
-fig.tight_layout()
-
-# Guardar la imagen
-fname = "./images/temperature.png"
-plt.savefig(fname)
-fname
 #+end_src
 
 #+RESULTS:
-[[file:./images/temperature.png]]
 
 [[./images/temperature.png]]
 
@@ -374,113 +371,106 @@ el servidor http de emacs se ejecuta desde la carpeta public es necesario copiar
 el archivo a la ubicación equivalente en /public/images
 
 #+begin_src shell
- cp -rfv ./images/* /home/iccd332/CityWeather/weather-site/public/images
+ cp -rfv ./images/* /home/iccd332/TorontoWeather/weather-site/public/images
 #+end_src
 
 #+RESULTS:
-| './images/humedad.png'     | -> | '/home/iccd332/CityWeather/weather-site/public/images/humedad.png'     |
-| './images/temperature.png' | -> | '/home/iccd332/CityWeather/weather-site/public/images/temperature.png' |
-| './images/viento.png'      | -> | '/home/iccd332/CityWeather/weather-site/public/images/viento.png'      |
+| './images/humedad.png'     | -> | '/home/iccd332/TorontoWeather/weather-site/public/images/humedad.png'     |
+| './images/temperature.png' | -> | '/home/iccd332/TorontoWeather/weather-site/public/images/temperature.png' |
+| './images/viento.png'      | -> | '/home/iccd332/TorontoWeather/weather-site/public/images/viento.png'      |
 
 ** Realice una gráfica de Humedad con respecto al tiempo
 
-#+begin_src python :session clima :results file :exports both :file ./images/humedad.png
+#+begin_src python :session :results output exports both
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import os
 
-# Cargar datos desde el archivo CSV
-archivo_csv = "/home/iccd332/CityWeather/clima-toronto-hoy.csv"
-df = pd.read_csv(archivo_csv, sep="|", skiprows=2, engine="python")  # Omitir encabezados decorativos
+def leer_datos(file): #limpia el formato de tabla
+    df = pd.read_csv(file, sep='|', skipinitialspace=True, skip_blank_lines=True, encoding='utf-8')
+    df.columns = [col.strip() for col in df.columns]
+    df = df.dropna(axis=1, how='all')
+    df = df[~df['Descripción'].str.contains('---', na=False)]
+    for col in df.columns:
+        if df[col].dtype == 'object':
+            df[col] = df[col].str.strip()
+    df['Fecha y Hora'] = pd.to_datetime(df['Fecha y Hora'].str.strip(), format='%Y-%m-%d %H:%M:%S')
+    return df
 
-# Eliminar espacios en nombres de columnas
-df.columns = df.columns.str.strip()
+def graficar(df, y_col, y_label, output_file): #crea la grafica
+    fig, ax = plt.subplots(figsize=(12, 6))
+    ax.plot(df['Fecha y Hora'], df[y_col], marker='o', linestyle='-', linewidth=2, markersize=6)
+    ax.grid(True, linestyle='--', alpha=0.7)
+    city_name = df['Ciudad'].iloc[0] if not df['Ciudad'].empty else "Unknown"
+    ax.set_title(f'{y_label} vs Tiempo en {city_name}', fontsize=14, pad=20)
+    ax.set_xlabel('Fecha y Hora', fontsize=12)
+    ax.set_ylabel(y_label, fontsize=12)
+    ax.xaxis.set_major_locator(mdates.HourLocator(interval=1))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d %H:%M'))
+    plt.xticks(rotation=45)
+    fig.tight_layout()
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    plt.savefig(output_file, dpi=300, bbox_inches='tight')
+    plt.close()
 
-# Convertir la columna de fecha a formato datetime
-df["Fecha y Hora"] = pd.to_datetime(df["Fecha y Hora"])
+if __name__ == "__main__":
+    archivo_csv = "/home/iccd332/TorontoWeather/clima-toronto-hoy.csv"
+    save = "/home/iccd332/TorontoWeather/weather-site/content/images/"
 
-# Convertir temperatura a tipo numérico
-df["Humedad (%)"] = pd.to_numeric(df["Humedad (%)"], errors="coerce")
+    df = leer_datos(archivo_csv)
 
-# Definir el tamaño de la figura
-fig = plt.figure(figsize=(8,6))
+    graficar(df, 'Humedad (%)', 'Humedad (%)', f'{save}humedad.png')
 
-# Dibujar la gráfica de temperatura vs. tiempo
-plt.plot(df["Fecha y Hora"], df["Humedad (%)"], marker='o', linestyle='-')
-
-# Ajuste para la presentación de fechas en la imagen
-plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=2))
-plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
-
-# Personalización de la gráfica
-plt.grid()
-plt.title(f"Humedad vs Tiempo en {df['Ciudad'].iloc[0]}")  # Obtener el nombre de la ciudad
-plt.xlabel("Fecha y Hora")
-plt.ylabel("Humedad (%)")
-plt.xticks(rotation=40)  # Rotación de etiquetas del eje X
-
-# Ajustar diseño para evitar superposición
-fig.tight_layout()
-
-# Guardar la imagen
-fname = "./images/humedad.png"
-plt.savefig(fname)
-fname
 #+end_src
 
 #+RESULTS:
-[[file:./images/humedad.png]]
-
 
 [[./images/humedad.png]]
 
 **  *Opcional* Presente alguna gráfica de interés. gráfica de viento con respecto al tiempo
-#+begin_src python :session clima :results file :exports both :file ./images/viento.png
+#+begin_src python :session :results output exports both
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import os
 
-# Cargar datos desde el archivo CSV
-archivo_csv = "/home/iccd332/CityWeather/clima-toronto-hoy.csv"
-df = pd.read_csv(archivo_csv, sep="|", skiprows=2, engine="python")  # Omitir encabezados decorativos
+def leer_datos(file): #limpia el formato de tabla
+    df = pd.read_csv(file, sep='|', skipinitialspace=True, skip_blank_lines=True, encoding='utf-8')
+    df.columns = [col.strip() for col in df.columns]
+    df = df.dropna(axis=1, how='all')
+    df = df[~df['Descripción'].str.contains('---', na=False)]
+    for col in df.columns:
+        if df[col].dtype == 'object':
+            df[col] = df[col].str.strip()
+    df['Fecha y Hora'] = pd.to_datetime(df['Fecha y Hora'].str.strip(), format='%Y-%m-%d %H:%M:%S')
+    return df
 
-# Eliminar espacios en nombres de columnas
-df.columns = df.columns.str.strip()
+def graficar(df, y_col, y_label, output_file): #crea la grafica
+    fig, ax = plt.subplots(figsize=(12, 6))
+    ax.plot(df['Fecha y Hora'], df[y_col], marker='o', linestyle='-', linewidth=2, markersize=6)
+    ax.grid(True, linestyle='--', alpha=0.7)
+    city_name = df['Ciudad'].iloc[0] if not df['Ciudad'].empty else "Unknown"
+    ax.set_title(f'{y_label} vs Tiempo en {city_name}', fontsize=14, pad=20)
+    ax.set_xlabel('Fecha y Hora', fontsize=12)
+    ax.set_ylabel(y_label, fontsize=12)
+    ax.xaxis.set_major_locator(mdates.HourLocator(interval=1))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d %H:%M'))
+    plt.xticks(rotation=45)
+    fig.tight_layout()
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    plt.savefig(output_file, dpi=300, bbox_inches='tight')
+    plt.close()
 
-# Convertir la columna de fecha a formato datetime
-df["Fecha y Hora"] = pd.to_datetime(df["Fecha y Hora"])
+if __name__ == "__main__":
+    archivo_csv = "/home/iccd332/TorontoWeather/clima-toronto-hoy.csv"
+    save = "/home/iccd332/TorontoWeather/weather-site/content/images/"
 
-# Convertir temperatura a tipo numérico
-df["Viento (m/s)"] = pd.to_numeric(df["Viento (m/s)"], errors="coerce")
-
-# Definir el tamaño de la figura
-fig = plt.figure(figsize=(8,6))
-
-# Dibujar la gráfica de temperatura vs. tiempo
-plt.plot(df["Fecha y Hora"], df["Viento (m/s)"], marker='o', linestyle='-')
-
-# Ajuste para la presentación de fechas en la imagen
-plt.gca().xaxis.set_major_locator(mdates.DayLocator(interval=2))
-plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
-
-# Personalización de la gráfica
-plt.grid()
-plt.title(f"Viento vs Tiempo en {df['Ciudad'].iloc[0]}")  # Obtener el nombre de la ciudad
-plt.xlabel("Fecha y Hora")
-plt.ylabel("Viento (m/s)")
-plt.xticks(rotation=40)  # Rotación de etiquetas del eje X
-
-# Ajustar diseño para evitar superposición
-fig.tight_layout()
-
-# Guardar la imagen
-fname = "./images/viento.png"
-plt.savefig(fname)
-fname
+    df = leer_datos(archivo_csv)
+    graficar(df, 'Viento (m/s)', 'Viento (m/s)', f'{save}viento.png')
 #+end_src
 
 #+RESULTS:
-[[file:./images/viento.png]]
 
 [[./images/viento.png]]
 * Referencias
